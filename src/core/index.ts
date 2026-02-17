@@ -1,3 +1,6 @@
-// Public exports from core go here.
-// Keep core framework-free (no Nest imports).
-export {};
+// Public exports from core layer.
+// Keep core framework-free (no NestJS imports).
+
+export * from "./types";
+export * from "./config";
+export * from "./correlation";

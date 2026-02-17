@@ -1,8 +1,8 @@
 {
-  "name": "@ciscode/nestjs-developerkit",
+  "name": "@ciscode/logging-kit",
   "version": "0.0.0",
   "private": true,
-  "description": "Template for NestJS developer kits (npm packages).",
+  "description": "Universal logging library for NestJS with configurable transports (Console, File, HTTP/Dynatrace)",
   "author": "CisCode",
   "license": "MIT",
   "type": "module",
@@ -45,12 +45,16 @@
     "rxjs": "^7"
   },
   "dependencies": {
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1",
+    "uuid": "^9.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
+    "@types/uuid": "^9.0.0",
     "eslint": "^9.18.0",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.5.0",

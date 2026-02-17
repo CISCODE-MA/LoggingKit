@@ -28,6 +28,7 @@ export default [
       import: importPlugin,
     },
     rules: {
+      "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
 
