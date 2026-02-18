@@ -54,5 +54,15 @@ export function createTransports(config: LoggingConfig): winston.transport[] {
     );
   }
 
+  // Fallback: add a silent transport if none configured (prevents Winston errors)
+  if (transports.length === 0) {
+    transports.push(
+      new winston.transports.Console({
+        level: "error",
+        silent: true,
+      }),
+    );
+  }
+
   return transports;
 }

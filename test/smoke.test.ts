@@ -19,6 +19,11 @@ describe("Core - Config", () => {
     expect(config.console).toBe(true);
     expect(config.file).toBe(false);
     expect(config.http).toBe(false);
+    expect(config.filePath).toBe("./logs/app.log");
+    expect(config.fileMaxSize).toBe(10 * 1024 * 1024);
+    expect(config.fileMaxFiles).toBe(5);
+    expect(config.httpUrl).toBe("");
+    expect(config.httpApiKey).toBe("");
   });
 
   test("buildConfig respects overrides", () => {
@@ -27,11 +32,32 @@ describe("Core - Config", () => {
     expect(config.file).toBe(true);
   });
 
+  test("buildConfig reads from environment variables", async () => {
+    process.env["LOG_LEVEL"] = "error";
+    process.env["LOG_CONSOLE"] = "false";
+    process.env["LOG_FILE"] = "true";
+    process.env["LOG_FILE_PATH"] = "/custom/path.log";
+
+    // Need to re-import to pick up new env vars
+    const { buildConfig: freshBuildConfig } = await import("../src/core/config");
+    const config = freshBuildConfig();
+
+    expect(config.level).toBe("error");
+    expect(config.console).toBe(false);
+    expect(config.file).toBe(true);
+    expect(config.filePath).toBe("/custom/path.log");
+  });
+
   test("DEFAULT_CONFIG is valid LoggingConfig", () => {
     expect(DEFAULT_CONFIG).toHaveProperty("level");
     expect(DEFAULT_CONFIG).toHaveProperty("console");
     expect(DEFAULT_CONFIG).toHaveProperty("file");
     expect(DEFAULT_CONFIG).toHaveProperty("http");
+    expect(DEFAULT_CONFIG).toHaveProperty("filePath");
+    expect(DEFAULT_CONFIG).toHaveProperty("fileMaxSize");
+    expect(DEFAULT_CONFIG).toHaveProperty("fileMaxFiles");
+    expect(DEFAULT_CONFIG).toHaveProperty("httpUrl");
+    expect(DEFAULT_CONFIG).toHaveProperty("httpApiKey");
   });
 });
 
