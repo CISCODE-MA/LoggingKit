@@ -22,6 +22,28 @@ export interface LoggingConfig {
   http: boolean;
   httpUrl: string;
   httpApiKey: string;
+
+  /** Log masking/redaction configuration */
+  maskEnabled: boolean;
+  maskFields: string[];
+  maskPattern: string;
+
+  /** Request body logging configuration */
+  logRequestBody: boolean;
+  logResponseBody: boolean;
+  bodyMaxSize: number;
+
+  /** Performance metrics configuration */
+  perfEnabled: boolean;
+  perfThreshold: number;
+
+  /** Log sampling configuration */
+  samplingEnabled: boolean;
+  samplingRate: number;
+
+  /** Error stack parsing configuration */
+  errorStackEnabled: boolean;
+  errorStackLines: number;
 }
 
 export interface LoggerMetadata {
