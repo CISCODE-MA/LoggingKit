@@ -1,9 +1,15 @@
 {
   "name": "@ciscode/logging-kit",
   "version": "1.0.0",
-  "private": true,
   "description": "Universal logging library for NestJS with configurable transports (Console, File, HTTP/Dynatrace)",
   "author": "CisCode",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CISCODE-MA/LoggingKit.git"
+  },
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
