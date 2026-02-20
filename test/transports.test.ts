@@ -2,13 +2,13 @@
  * Unit tests for transport creation.
  */
 
-import type { LoggingConfig } from "../src/core/types";
+import { buildConfig } from "../src/core/config";
 import { createTransports } from "../src/infra/transports";
 
 describe("Transports", () => {
   describe("createTransports()", () => {
     test("returns a silent fallback transport when all transports disabled", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -18,7 +18,7 @@ describe("Transports", () => {
         http: false,
         httpUrl: "",
         httpApiKey: "",
-      };
+      });
 
       const transports = createTransports(config);
       // Fallback silent transport to prevent Winston errors
@@ -27,7 +27,7 @@ describe("Transports", () => {
     });
 
     test("includes Console transport when console is true", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: true,
         file: false,
@@ -37,7 +37,7 @@ describe("Transports", () => {
         http: false,
         httpUrl: "",
         httpApiKey: "",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
@@ -45,7 +45,7 @@ describe("Transports", () => {
     });
 
     test("includes DailyRotateFile transport when file is true", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: true,
@@ -55,7 +55,7 @@ describe("Transports", () => {
         http: false,
         httpUrl: "",
         httpApiKey: "",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
@@ -63,7 +63,7 @@ describe("Transports", () => {
     });
 
     test("includes Http transport when http is true and httpUrl is set", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -73,7 +73,7 @@ describe("Transports", () => {
         http: true,
         httpUrl: "https://logs.example.com/api/logs",
         httpApiKey: "test-api-key",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
@@ -81,7 +81,7 @@ describe("Transports", () => {
     });
 
     test("does not include Http transport when httpUrl is empty", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -91,7 +91,7 @@ describe("Transports", () => {
         http: true,
         httpUrl: "", // Empty URL
         httpApiKey: "test-api-key",
-      };
+      });
 
       const transports = createTransports(config);
       // Only fallback transport since no valid transports configured
@@ -100,7 +100,7 @@ describe("Transports", () => {
     });
 
     test("includes multiple transports when enabled", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "debug",
         console: true,
         file: true,
@@ -110,7 +110,7 @@ describe("Transports", () => {
         http: true,
         httpUrl: "https://logs.example.com/api",
         httpApiKey: "key",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(3);
@@ -122,7 +122,7 @@ describe("Transports", () => {
     });
 
     test("respects log level in transports", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "error",
         console: true,
         file: false,
@@ -132,7 +132,7 @@ describe("Transports", () => {
         http: false,
         httpUrl: "",
         httpApiKey: "",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
@@ -143,7 +143,7 @@ describe("Transports", () => {
 
   describe("HTTP Transport URL Parsing", () => {
     test("handles HTTPS URLs correctly", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -153,14 +153,14 @@ describe("Transports", () => {
         http: true,
         httpUrl: "https://secure.example.com:8443/logs/ingest",
         httpApiKey: "secret-key",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
     });
 
     test("handles HTTP URLs correctly", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -170,14 +170,14 @@ describe("Transports", () => {
         http: true,
         httpUrl: "http://localhost:3000/logs",
         httpApiKey: "dev-key",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);
     });
 
     test("handles URLs with query parameters", () => {
-      const config: LoggingConfig = {
+      const config = buildConfig({
         level: "info",
         console: false,
         file: false,
@@ -187,7 +187,7 @@ describe("Transports", () => {
         http: true,
         httpUrl: "https://api.example.com/logs?env=test&version=1",
         httpApiKey: "api-key",
-      };
+      });
 
       const transports = createTransports(config);
       expect(transports.length).toBe(1);

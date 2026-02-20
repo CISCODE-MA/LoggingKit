@@ -4,3 +4,6 @@
 export * from "./types";
 export * from "./config";
 export * from "./correlation";
+export * from "./masking";
+export * from "./error-parser";
+export * from "./sampling";

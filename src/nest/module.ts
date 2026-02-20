@@ -5,10 +5,11 @@
 import { Module, Global } from "@nestjs/common";
 import type { DynamicModule, Provider } from "@nestjs/common";
 
+import { buildConfig } from "../core/config";
 import type { LoggingModuleOptions } from "../core/types";
 import { createLogger } from "../infra/logger.factory";
 
-import { LOGGER, LOGGING_MODULE_OPTIONS } from "./constants";
+import { LOGGER, LOGGING_CONFIG, LOGGING_MODULE_OPTIONS } from "./constants";
 import { CorrelationIdInterceptor } from "./interceptor";
 import { LoggingService } from "./service";
 
@@ -34,6 +35,14 @@ export class LoggingModule {
   static register(options: LoggingModuleOptions = {}): DynamicModule {
     const { config, defaultMeta, isGlobal = true } = options;
 
+    // Build full config from env vars + overrides
+    const fullConfig = buildConfig(config);
+
+    const configProvider: Provider = {
+      provide: LOGGING_CONFIG,
+      useValue: fullConfig,
+    };
+
     const loggerProvider: Provider = {
       provide: LOGGER,
       useFactory: () => createLogger(config, defaultMeta),
@@ -47,8 +56,14 @@ export class LoggingModule {
     return {
       module: LoggingModule,
       global: isGlobal,
-      providers: [optionsProvider, loggerProvider, LoggingService, CorrelationIdInterceptor],
-      exports: [LOGGER, LoggingService, CorrelationIdInterceptor],
+      providers: [
+        optionsProvider,
+        configProvider,
+        loggerProvider,
+        LoggingService,
+        CorrelationIdInterceptor,
+      ],
+      exports: [LOGGER, LOGGING_CONFIG, LoggingService, CorrelationIdInterceptor],
     };
   }
 
@@ -79,6 +94,14 @@ export class LoggingModule {
   }): DynamicModule {
     const { imports = [], inject = [], useFactory, isGlobal = true } = asyncOptions;
 
+    const configProvider: Provider = {
+      provide: LOGGING_CONFIG,
+      inject: [LOGGING_MODULE_OPTIONS],
+      useFactory: (options: LoggingModuleOptions) => {
+        return buildConfig(options.config);
+      },
+    };
+
     const loggerProvider: Provider = {
       provide: LOGGER,
       inject: [LOGGING_MODULE_OPTIONS],
@@ -97,8 +120,14 @@ export class LoggingModule {
       module: LoggingModule,
       global: isGlobal,
       imports,
-      providers: [optionsProvider, loggerProvider, LoggingService, CorrelationIdInterceptor],
-      exports: [LOGGER, LoggingService, CorrelationIdInterceptor],
+      providers: [
+        optionsProvider,
+        configProvider,
+        loggerProvider,
+        LoggingService,
+        CorrelationIdInterceptor,
+      ],
+      exports: [LOGGER, LOGGING_CONFIG, LoggingService, CorrelationIdInterceptor],
     };
   }
 }

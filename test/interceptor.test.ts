@@ -4,6 +4,7 @@
 import type { CallHandler, ExecutionContext } from "@nestjs/common";
 import { of, lastValueFrom } from "rxjs";
 
+import { buildConfig } from "../src/core/config";
 import { CORRELATION_ID_HEADER } from "../src/core/correlation";
 import { createLogger } from "../src/infra/logger.factory";
 import { CorrelationIdInterceptor } from "../src/nest/interceptor";
@@ -18,6 +19,7 @@ describe("CorrelationIdInterceptor - Behavior", () => {
     headers: Record<string, string | undefined>;
     method: string;
     url: string;
+    body?: unknown;
     logger?: any;
   };
   let mockResponse: {
@@ -28,6 +30,18 @@ describe("CorrelationIdInterceptor - Behavior", () => {
     // Create a real logger (with console disabled)
     const logger = createLogger({ console: false });
 
+    // Create test config
+    const testConfig = buildConfig({
+      console: false,
+      maskEnabled: true,
+      logRequestBody: false,
+      logResponseBody: false,
+      perfEnabled: true,
+      perfThreshold: 500,
+      errorStackEnabled: true,
+      errorStackLines: 10,
+    });
+
     // Create a mock LoggingService
     mockLoggingService = {
       withCorrelationId: jest.fn().mockImplementation((correlationId: string) => {
@@ -35,7 +49,7 @@ describe("CorrelationIdInterceptor - Behavior", () => {
       }),
     } as unknown as LoggingService;
 
-    interceptor = new CorrelationIdInterceptor(mockLoggingService);
+    interceptor = new CorrelationIdInterceptor(mockLoggingService, testConfig);
 
     // Setup mock request
     mockRequest = {
@@ -187,7 +201,10 @@ describe("CorrelationIdInterceptor - Behavior", () => {
       expect.objectContaining({
         method: "GET",
         url: "/api/test",
-        error: "Test error",
+        error: expect.objectContaining({
+          name: "Error",
+          message: "Test error",
+        }),
       }),
     );
   });
