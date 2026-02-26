@@ -1,18 +1,18 @@
-# Copilot Instructions - NestJS Developer Kit (Template)
+# Copilot Instructions – @ciscode/logging-kit
 
-> **Purpose**: Template for creating reusable NestJS module packages with best practices, standardized structure, and AI-friendly development workflow.
+> **Purpose**: Project-specific instructions for contributing to @ciscode/logging-kit, a modular TypeScript logging library for Node.js/NestJS, with best practices, standardized structure, and AI-friendly development workflow.
 
 ---
 
-## 🎯 Template Overview
+## 🎯 Project Overview
 
-**Package**: Template for `@ciscode/*` NestJS modules  
-**Type**: Backend NestJS Module Template  
-**Purpose**: Starting point for creating authentication, database, logging, and other NestJS modules
+- **Package**: @ciscode/logging-kit (see package.json)
+- **Type**: TypeScript logging library for Node.js/NestJS
+- **Purpose**: Provide robust, flexible, and secure logging for applications and frameworks
 
-### This Template Provides:
+### This Project Provides:
 
-- CSR (Controller-Service-Repository) architecture
+- Modular architecture: `core/`, `infra/`, `nest/`, `test/`
 - Complete TypeScript configuration with path aliases
 - Jest testing setup with 80% coverage threshold
 - Changesets for version management
@@ -22,181 +22,84 @@
 
 ---
 
-## 🏗️ Module Architecture
+## 🏗️ Project Architecture
 
-**Modules use Controller-Service-Repository (CSR) pattern for simplicity and reusability.**
-
-> **WHY CSR for modules?** Reusable libraries need to be simple, well-documented, and easy to integrate. The 4-layer Clean Architecture is better suited for complex applications, not libraries.
+**LoggingKit uses a modular, layered structure for flexibility and maintainability.**
 
 ```
 src/
-  ├── index.ts                    # PUBLIC API exports
-  ├── {module-name}.module.ts     # NestJS module definition
-  │
-  ├── controllers/                # HTTP Layer
-  │   └── example.controller.ts
-  │
-  ├── services/                   # Business Logic
-  │   └── example.service.ts
-  │
-  ├── entities/                   # Domain Models
-  │   └── example.entity.ts
-  │
-  ├── repositories/               # Data Access
-  │   └── example.repository.ts
-  │
-  ├── guards/                     # Auth Guards
-  │   └── example.guard.ts
-  │
-  ├── decorators/                 # Custom Decorators
-  │   └── example.decorator.ts
-  │
-  ├── dto/                        # Data Transfer Objects
-  │   └── example.dto.ts
-  │
-  ├── filters/                    # Exception Filters
-  ├── middleware/                 # Middleware
-  ├── config/                     # Configuration
-  └── utils/                      # Utilities
+  index.ts                    # PUBLIC API exports
+  core/                       # Core logging logic (config, masking, error parsing, etc)
+    config.ts, correlation.ts, error-parser.ts, masking.ts, sampling.ts, types.ts, index.ts
+  infra/                      # Logger factories, transports, adapters
+    logger.factory.ts, transports.ts, index.ts
+  nest/                       # NestJS integration (module, service, interceptor, decorators, etc)
+    constants.ts, decorators.ts, interceptor.ts, module.ts, service.ts, index.ts
+test/
+  *.test.ts                   # All tests live here
 ```
 
 **Responsibility Layers:**
 
-| Layer            | Responsibility                           | Examples                |
-| ---------------- | ---------------------------------------- | ----------------------- |
-| **Controllers**  | HTTP handling, route definition          | `example.controller.ts` |
-| **Services**     | Business logic, orchestration            | `example.service.ts`    |
-| **Entities**     | Domain models (Mongoose/TypeORM schemas) | `example.entity.ts`     |
-| **Repositories** | Data access, database queries            | `example.repository.ts` |
-| **Guards**       | Authentication/Authorization             | `jwt-auth.guard.ts`     |
-| **Decorators**   | Parameter extraction, metadata           | `@CurrentUser()`        |
-| **DTOs**         | Input validation, API contracts          | `create-example.dto.ts` |
+| Layer      | Responsibility                       | Examples                        |
+| ---------- | ------------------------------------ | ------------------------------- |
+| **core/**  | Logging logic, config, masking, etc. | `masking.ts`, `error-parser.ts` |
+| **infra/** | Logger factories, transports         | `logger.factory.ts`             |
+| **nest/**  | NestJS integration (module, service) | `module.ts`, `service.ts`       |
+| **test/**  | All tests                            | `logger.test.ts`                |
 
 **Module Exports (Public API):**
 
 ```typescript
-// src/index.ts - Only export what apps need to consume
-export { ExampleModule } from "./example.module";
-
-// Services (main API)
-export { ExampleService } from "./services/example.service";
-
-// DTOs (public contracts)
-export { CreateExampleDto, UpdateExampleDto } from "./dto";
-
-// Guards (for protecting routes)
-export { ExampleGuard } from "./guards/example.guard";
-
-// Decorators (for DI and metadata)
-export { ExampleDecorator } from "./decorators/example.decorator";
-
-// Types & Interfaces (for TypeScript typing)
-export type { ExampleOptions, ExampleResult } from "./types";
-
-// ❌ NEVER export entities or repositories
-// export { Example } from './entities/example.entity'; // FORBIDDEN
-// export { ExampleRepository } from './repositories/example.repository'; // FORBIDDEN
+// src/index.ts - Only export what consumers need
+export * from "./core";
+export * from "./nest";
+export { createLogger } from "./infra/logger.factory";
+// ❌ NEVER export internal helpers or test utilities
 ```
 
 **Rationale:**
 
-- **Entities** = internal implementation details (can change)
-- **Repositories** = internal data access (apps shouldn't depend on it)
-- **DTOs** = stable public contracts (apps depend on these)
-- **Services** = public API (apps use methods, not internals)
+- Only expose stable, documented APIs
+- Internal helpers and test utilities are private
 
 ---
 
 ## 📝 Naming Conventions
 
-### Files
-
-**Pattern**: `kebab-case` + suffix
-
-| Type       | Example                     | Directory       |
-| ---------- | --------------------------- | --------------- |
-| Controller | `example.controller.ts`     | `controllers/`  |
-| Service    | `example.service.ts`        | `services/`     |
-| Entity     | `example.entity.ts`         | `entities/`     |
-| Repository | `example.repository.ts`     | `repositories/` |
-| DTO        | `create-example.dto.ts`     | `dto/`          |
-| Guard      | `jwt-auth.guard.ts`         | `guards/`       |
-| Decorator  | `current-user.decorator.ts` | `decorators/`   |
-| Filter     | `http-exception.filter.ts`  | `filters/`      |
-| Middleware | `logger.middleware.ts`      | `middleware/`   |
-| Utility    | `validation.utils.ts`       | `utils/`        |
-| Config     | `jwt.config.ts`             | `config/`       |
-
-### Code Naming
-
-- **Classes & Interfaces**: `PascalCase` → `ExampleController`, `CreateExampleDto`
-- **Variables & Functions**: `camelCase` → `getUserById`, `exampleList`
-- **Constants**: `UPPER_SNAKE_CASE` → `DEFAULT_TIMEOUT`, `MAX_RETRIES`
-- **Enums**: Name `PascalCase`, values `UPPER_SNAKE_CASE`
-
-```typescript
-enum ExampleStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-}
-```
+- **Files**: `kebab-case` for files, `.ts` extension
+- **Classes & Interfaces**: `PascalCase` (e.g. `LoggerFactory`, `LoggingInterceptor`)
+- **Functions & Variables**: `camelCase`
+- **Constants/Enums**: `UPPER_SNAKE_CASE` for values
 
 ### Path Aliases
 
 Configured in `tsconfig.json`:
 
-```typescript
-"@/*"              → "src/*"
-"@controllers/*"   → "src/controllers/*"
-"@services/*"      → "src/services/*"
-"@entities/*"      → "src/entities/*"
-"@repos/*"         → "src/repositories/*"
-"@dtos/*"          → "src/dto/*"
-"@guards/*"        → "src/guards/*"
-"@decorators/*"    → "src/decorators/*"
-"@config/*"        → "src/config/*"
-"@utils/*"         → "src/utils/*"
+```json
+"@core/*"   : ["src/core/*"],
+"@infra/*"  : ["src/infra/*"],
+"@nest/*"   : ["src/nest/*"],
 ```
 
 Use aliases for cleaner imports:
 
 ```typescript
-import { CreateExampleDto } from "@dtos/create-example.dto";
-import { ExampleService } from "@services/example.service";
-import { Example } from "@entities/example.entity";
+import { maskSensitiveData } from "@core/masking";
+import { createLogger } from "@infra/logger.factory";
+import { LoggingInterceptor } from "@nest/interceptor";
 ```
 
 ---
 
-## 🧪 Testing - RIGOROUS for Modules
+## 🧪 Testing
 
 ### Coverage Target: 80%+
 
-**Unit Tests - MANDATORY:**
-
-- ✅ All services (business logic)
-- ✅ All utilities and helpers
-- ✅ Guards and decorators
-- ✅ Repository methods
-
-**Integration Tests:**
-
-- ✅ Controllers (full request/response)
-- ✅ Module initialization
-- ✅ Database operations (with test DB or mocks)
-
-**E2E Tests:**
-
-- ✅ Complete flows (critical user paths)
-
-**Test file location:**
-
-```
-src/
-  └── services/
-      ├── example.service.ts
-      └── example.service.spec.ts  ← Same directory
-```
+- ✅ All core logic, helpers, and adapters must have unit tests
+- ✅ All NestJS integration (interceptor, service, module) must have tests
+- ✅ All transports and factories must be tested
+- ✅ All new code must have tests in `test/`
 
 **Jest Configuration:**
 
@@ -213,90 +116,20 @@ coverageThreshold: {
 
 ---
 
-## 📚 Documentation - Complete
+## 📚 Documentation
 
-### JSDoc/TSDoc - ALWAYS for:
-
-````typescript
-/**
- * Creates a new example record
- * @param data - The example data to create
- * @returns The created example with generated ID
- * @throws {BadRequestException} If data is invalid
- * @example
- * ```typescript
- * const example = await service.create({ name: 'Test' });
- * ```
- */
-async create(data: CreateExampleDto): Promise<Example>
-````
-
-**Required for:**
-
-- All public functions/methods
-- All exported classes
-- All DTOs (with property descriptions)
-
-### Swagger/OpenAPI - Always on controllers:
-
-```typescript
-@ApiOperation({ summary: 'Create new example' })
-@ApiResponse({ status: 201, description: 'Created successfully', type: ExampleDto })
-@ApiResponse({ status: 400, description: 'Invalid input' })
-@Post()
-async create(@Body() dto: CreateExampleDto) { }
-```
+- All public functions/methods and exported classes must have TSDoc/JSDoc
+- All exported types/interfaces must be documented
+- Add usage examples in README.md for new features
 
 ---
 
-## 🚀 Module Development Principles
+## 🚀 Development Principles
 
-### 1. Exportability
-
-**Export ONLY public API (Services + DTOs + Guards + Decorators):**
-
-```typescript
-// src/index.ts - Public API
-export { ExampleModule } from "./example.module";
-export { ExampleService } from "./services/example.service";
-export { CreateExampleDto, UpdateExampleDto } from "./dto";
-export { ExampleGuard } from "./guards/example.guard";
-export { ExampleDecorator } from "./decorators/example.decorator";
-export type { ExampleOptions } from "./types";
-```
-
-**❌ NEVER export:**
-
-- Entities (internal domain models)
-- Repositories (infrastructure details)
-
-### 2. Configuration
-
-**Flexible module registration:**
-
-```typescript
-@Module({})
-export class ExampleModule {
-  static forRoot(options: ExampleModuleOptions): DynamicModule {
-    return {
-      module: ExampleModule,
-      providers: [{ provide: "EXAMPLE_OPTIONS", useValue: options }, ExampleService],
-      exports: [ExampleService],
-    };
-  }
-
-  static forRootAsync(options: ExampleModuleAsyncOptions): DynamicModule {
-    // Async configuration
-  }
-}
-```
-
-### 3. Zero Business Logic Coupling
-
-- No hardcoded business rules
-- Configurable behavior via options
-- Database-agnostic (if applicable)
-- Apps provide their own connections
+- Export ONLY public API (core, nest, createLogger)
+- Never export test utilities or internal helpers
+- No hardcoded business rules; all behavior should be configurable
+- No direct database or external service dependencies
 
 ---
 
@@ -307,39 +140,29 @@ export class ExampleModule {
 **1. Branch Creation:**
 
 ```bash
-feature/MODULE-123-add-feature
-bugfix/MODULE-456-fix-issue
-refactor/MODULE-789-improve-code
+feature/LOGKIT-123-add-feature
+bugfix/LOGKIT-456-fix-issue
+refactor/LOGKIT-789-improve-code
 ```
 
 **2. Task Documentation:**
 Create task file at branch start:
 
 ```
-docs/tasks/active/MODULE-123-add-feature.md
+docs/tasks/active/LOGKIT-123-add-feature.md
 ```
 
 **3. On Release:**
 Move to archive:
 
 ```
-docs/tasks/archive/by-release/v2.0.0/MODULE-123-add-feature.md
+docs/tasks/archive/by-release/vX.Y.Z/LOGKIT-123-add-feature.md
 ```
 
 ### Development Workflow
 
-**Simple changes**:
-
 - Read context → Implement → Update docs → **Create changeset**
-
-**Complex changes**:
-
-- Read context → Discuss approach → Implement → Update docs → **Create changeset**
-
-**When blocked**:
-
-- **DO**: Ask immediately
-- **DON'T**: Generate incorrect output
+- If blocked: Ask immediately, don't guess
 
 ---
 
@@ -347,130 +170,69 @@ docs/tasks/archive/by-release/v2.0.0/MODULE-123-add-feature.md
 
 ### Semantic Versioning (Strict)
 
-**MAJOR** (x.0.0) - Breaking changes:
-
-- Changed function signatures
-- Removed public methods
-- Changed DTOs structure
-- Changed module configuration
-
-**MINOR** (0.x.0) - New features:
-
-- New endpoints/methods
-- New optional parameters
-- New decorators/guards
-
-**PATCH** (0.0.x) - Bug fixes:
-
-- Internal fixes
-- Performance improvements
-- Documentation updates
+- **MAJOR** (x.0.0) - Breaking changes to public API, config, or exported types
+- **MINOR** (0.x.0) - New features, new options, new adapters
+- **PATCH** (0.0.x) - Bug fixes, performance, docs
 
 ### Changesets Workflow
 
-**ALWAYS create a changeset for user-facing changes:**
+- ALWAYS create a changeset for user-facing changes:
 
 ```bash
 npx changeset
 ```
 
-**When to create a changeset:**
+- When to create a changeset:
+  - ✅ New features
+  - ✅ Bug fixes
+  - ✅ Breaking changes
+  - ✅ Performance improvements
+  - ❌ Internal refactoring (no user impact)
+  - ❌ Documentation updates only
+  - ❌ Test improvements only
 
-- ✅ New features
-- ✅ Bug fixes
-- ✅ Breaking changes
-- ✅ Performance improvements
-- ❌ Internal refactoring (no user impact)
-- ❌ Documentation updates only
-- ❌ Test improvements only
-
-**Before completing any task:**
-
-- [ ] Code implemented
-- [ ] Tests passing
-- [ ] Documentation updated
-- [ ] **Changeset created** ← CRITICAL
-- [ ] PR ready
+- Before completing any task:
+  - [ ] Code implemented
+  - [ ] Tests passing
+  - [ ] Documentation updated
+  - [ ] **Changeset created** ← CRITICAL
+  - [ ] PR ready
 
 **Changeset format:**
 
 ```markdown
 ---
-"@ciscode/example-kit": minor
+"loggingkit": minor
 ---
 
-Added support for custom validators in ExampleService
-```
-
-### CHANGELOG Required
-
-Changesets automatically generates CHANGELOG. For manual additions:
-
-```markdown
-# Changelog
-
-## [2.0.0] - 2026-02-03
-
-### BREAKING CHANGES
-
-- `create()` now requires `userId` parameter
-- Removed deprecated `validateExample()` method
-
-### Added
-
-- New `ExampleGuard` for route protection
-- Support for async configuration
-
-### Fixed
-
-- Fixed validation edge case
+Added support for custom masking in LoggerFactory
 ```
 
 ---
 
 ## 🔐 Security Best Practices
 
-**ALWAYS:**
-
-- ✅ Input validation on all DTOs (class-validator)
-- ✅ JWT secret from env (never hardcoded)
-- ✅ Rate limiting on public endpoints
-- ✅ No secrets in code
-- ✅ Sanitize error messages (no stack traces in production)
-
-**Example:**
-
-```typescript
-export class CreateExampleDto {
-  @IsString()
-  @MinLength(3)
-  @MaxLength(50)
-  name: string;
-
-  @IsEmail()
-  email: string;
-}
-```
+- Never log secrets or sensitive data
+- Mask PII in logs by default
+- Validate all input to public APIs
+- Sanitize error messages (no stack traces in production)
 
 ---
 
 ## 🚫 Restrictions - Require Approval
 
-**NEVER without approval:**
-
-- Breaking changes to public API
-- Changing exported DTOs/interfaces
-- Removing exported functions
-- Major dependency upgrades
-- Security-related changes
-
-**CAN do autonomously:**
-
-- Bug fixes (no breaking changes)
-- Internal refactoring
-- Adding new features (non-breaking)
-- Test improvements
-- Documentation updates
+- NEVER without approval:
+  - Breaking changes to public API
+  - Changing exported types/interfaces
+  - Removing exported functions
+  - Major dependency upgrades
+  - Security-related changes
+- CAN do autonomously:
+  - Bug fixes (no breaking changes)
+  - Internal refactoring
+  - Adding new features (non-breaking)
+  - Test improvements
+  - Documentation updates
 
 ---
 
@@ -492,29 +254,12 @@ Before publishing:
 
 ## 🔄 Development Workflow
 
-### Working on Module:
-
-1. Clone module repo
-2. Create branch: `feature/TASK-123-description` from `develop`
+1. Clone LoggingKit repo
+2. Create branch: `feature/LOGKIT-123-description` from `develop`
 3. Implement with tests
 4. **Create changeset**: `npx changeset`
 5. Verify checklist
 6. Create PR → `develop`
-
-### Testing in App:
-
-```bash
-# In module
-npm link
-
-# In app
-cd ~/comptaleyes/backend
-npm link @ciscode/example-kit
-
-# Develop and test
-# Unlink when done
-npm unlink @ciscode/example-kit
-```
 
 ---
 
@@ -524,63 +269,15 @@ npm unlink @ciscode/example-kit
 - Prettier formatting
 - TypeScript strict mode
 - FP for logic, OOP for structure
-- Dependency injection via constructor
-
-**Example:**
-
-```typescript
-@Injectable()
-export class ExampleService {
-  constructor(
-    private readonly repo: ExampleRepository,
-    private readonly logger: LoggerService,
-  ) {}
-}
-```
+- Dependency injection via constructor (for NestJS integration)
 
 ---
 
 ## 🐛 Error Handling
 
-**Custom domain errors:**
-
-```typescript
-export class ExampleNotFoundError extends Error {
-  constructor(id: string) {
-    super(`Example ${id} not found`);
-    this.name = "ExampleNotFoundError";
-  }
-}
-```
-
-**Structured logging:**
-
-```typescript
-this.logger.error("Operation failed", {
-  exampleId: id,
-  reason: "validation_error",
-  timestamp: new Date().toISOString(),
-});
-```
-
-**NEVER silent failures:**
-
-```typescript
-// ❌ WRONG
-try {
-  await operation();
-} catch (error) {
-  // Silent failure
-}
-
-// ✅ CORRECT
-try {
-  await operation();
-} catch (error) {
-  this.logger.error("Operation failed", { error });
-  throw error;
-}
-```
+- Use custom error classes for domain errors (e.g. `LoggingKitConfigError`)
+- Always use structured logging for errors
+- Never swallow errors silently
 
 ---
 
@@ -588,14 +285,14 @@ try {
 
 - Brief and direct
 - Focus on results
-- Module-specific context
+- LoggingKit-specific context
 - Highlight breaking changes immediately
 
 ---
 
 ## 📋 Summary
 
-**Module Principles:**
+**LoggingKit Principles:**
 
 1. Reusability over specificity
 2. Comprehensive testing (80%+)
@@ -605,9 +302,9 @@ try {
 6. Zero app coupling
 7. Configurable behavior
 
-**When in doubt:** Ask, don't assume. Modules impact multiple projects.
+**When in doubt:** Ask, don't assume. LoggingKit is used in multiple projects.
 
 ---
 
-_Last Updated: February 3, 2026_  
-_Version: 2.0.0_
+_Last Updated: 2026-02-26_  
+_Version: 2.1.0_
