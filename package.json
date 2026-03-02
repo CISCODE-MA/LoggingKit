@@ -62,7 +62,7 @@
     "@nestjs/core": "^11.1.13",
     "@nestjs/testing": "^11.1.13",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.7",
+    "@types/node": "^25.3.3",
     "@types/uuid": "^9.0.0",
     "eslint": "^10.0.2",
     "eslint-plugin-import": "^2.32.0",
