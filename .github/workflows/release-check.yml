@@ -24,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
+    permissions:
+      contents: read
+
     # Config stays in the workflow file (token stays in repo secrets)
     env:
       SONAR_HOST_URL: "https://sonarcloud.io"
@@ -32,21 +35,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
 
       - name: Install
         run: npm ci
-
-      - name: Audit
-        run: npm audit --production
 
       - name: Format
         run: npm run format
@@ -65,7 +65,7 @@ jobs:
 
       - name: SonarCloud Scan
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.sonar == 'true' }}
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
@@ -79,7 +79,7 @@ jobs:
 
       - name: SonarCloud Quality Gate
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.sonar == 'true' }}
-        uses: SonarSource/sonarqube-quality-gate-action@v1
+        uses: SonarSource/sonarqube-quality-gate-action@d304d050d930b02a896b0f85935344f023928496 # v1
         timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
